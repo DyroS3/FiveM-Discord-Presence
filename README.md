@@ -1,11 +1,8 @@
-# **FiveM Discord Rich Presence**
+# **FiveM-Discord 界面优化**
 
-## The first iteration of a fully customizable, open source script to create a custom, "high effort" rich presence for your server. 
-The script itself is not framework dependent, but without a framework most styles currently included don't work. 
-Although ESX compatibility was not tested, it should function properly.
+> 完全可定制的开源脚本, 用于为您的服务器创建纯自定义, 最丰富数据呈现
 
-
-# Installation
+# 安装指南
 
  1. Download the latest release from the [Releases](https://github.com/boofiboi/FiveM-Discord-Presence/releases) tab
  2. Place the folder inside of the archive anywhere in your resources folder
