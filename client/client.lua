@@ -7,7 +7,7 @@ if Config.Framework == 'ESX' then
     if ESX.GetPlayerData().identifier ~= nil then
         LoadedAndReady = true
     end
-     playerData = ESX.GetPlayerData()
+
 elseif Config.Framework == 'QB' or Config.Framework == nil then
      QBCore = exports['qb-core']:GetCoreObject()
 if QBCore.Functions.GetPlayerData().citizenid ~= nil then
@@ -30,14 +30,32 @@ local h_tbl = {
     [8] = "[🟩🟩🟩🟩🟩🟩🟩🟩]"
 }
 
-
+local lastSeedUpdate = 0
+local seedUpdateInterval = 5 -- 更新种子的间隔时间（秒）
 
 function custom()
-    math.randomseed(os.time())
-    local randomIndex = math.random(0, #Config.CustomText) 
+    local currentTime = math.floor(GetGameTimer() / 1000) -- 将毫秒转换为秒并取整
+    if currentTime - lastSeedUpdate >= seedUpdateInterval then
+        math.randomseed(currentTime)
+        lastSeedUpdate = currentTime
+    end
+
+    local coords = GetEntityCoords(PlayerPedId())
+    local location = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords[1], coords[2], coords[3]))
+    local ID = GetPlayerServerId(PlayerId())
+    local Health = math.floor(GetEntityHealth(PlayerPedId()) / 25)
+    Config.CustomText = {
+        [0] = '我的位置: '.. location,
+        [1] = '我的服务器ID: '..ID,
+        [2] = '我的名称: '..ESX.PlayerData.firstName..ESX.PlayerData.lastName,
+        [3] = "我的生命值:".."💓" .. h_tbl[Health],
+    }
+    local randomIndex = math.random(0, #Config.CustomText)
     local randomElement = Config.CustomText[randomIndex]
     return randomElement
 end
+
+
 function healthdisplay()
 Health = math.floor(GetEntityHealth(PlayerPedId()) / 25)
     if Config.Framework == 'QB' then
@@ -57,14 +75,19 @@ end
 function location()
     local coords = GetEntityCoords(ped)
     local location = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords[1], coords[2], coords[3]))
-    return Config.LocationText .. ' ' .. location
+    local ID = GetPlayerServerId (PlayerId())
+    return '我的服务器ID:'.. ID ..Config.LocationText .. ' ' .. location 
 end
 
 function nameandid() 
     if Config.Framework == 'QB' then
        return 'ID: ' .. GetPlayerServerId() .. ' | ' .. playerData.charinfo.firstname  .. ' ' .. playerData.charinfo.lastname
     elseif Config.Framework == 'ESX' then
-        return 'ID: ' .. GetPlayerServerId() .. ' | ' .. playerData.firstName  .. ' ' .. playerData.lastName
+        local coords = GetEntityCoords(PlayerPedId())
+        local location = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords[1], coords[2], coords[3]))
+
+        local Health = math.floor(GetEntityHealth(PlayerPedId()) / 25)
+        return "💓 " .. h_tbl[Health]..' | 我的位置: '..location..' | ID: ' .. GetPlayerServerId()+1 .. ' | \n昵称: ' .. playerData.firstName  .. '' .. playerData.lastName..' | \n职业: '.. playerData.job.label
     end
 end
 
@@ -89,8 +112,9 @@ end)
 
 
 -- Useless stuff just to know when player has chosen a character so we dont try getting his status when he doesnt have one.
-RegisterNetEvent('esx:playerLoaded', function(playerData)
-LoadedAndReady = true
+RegisterNetEvent('esx:playerLoaded', function(xPlayer)
+    ESX.PlayerData = xPlayer
+    LoadedAndReady = true
 end)
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
 LoadedAndReady = true  
